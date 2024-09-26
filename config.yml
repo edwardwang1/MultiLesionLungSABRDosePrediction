@@ -1,0 +1,32 @@
+DATA_FILE: "PATH_TO/SampleDataFile.csv"
+DICOM_PATH: "PATH_TO/DICOM"
+VOXELIZED_SAVE_PATH: "PATH_TO/RTUtilsOutput"
+MRB_SAVE_PATH: "PATH_TO/MRBs"
+NUMPY_SAVE_PATH: "PATH_TO/NumpyStack"
+LUNG_LEFT: "Lung_L"
+LUNG_RIGHT: "Lung_R"
+BODY: "External"
+HEART: "Heart"
+ESOPHAGUS: "Esophagus"
+AORTA: "Aorta"
+PULMONARYBRONCHIALTREE: "BronchialTree"
+CHESTWALL: "Chestwall"
+GREATVESSELS: "GreatVessels"
+SPINALCANAL: "SpinalCanal"
+TRACHEA: "Trachea"
+VENACAVA_INF: "V_Venacava_I"
+VENACAVA_SUP: "V_Venacava_S"
+TRAIN_PATIENT_LIST: "PATH_TO/train.txt"
+TEST_PATIENT_LIST: "PATH_TO/test.txt"
+SAVE_DIR : "Output"
+EXP_NAME : "Test"
+NUM_EPOCHS: 2
+BATCH_SIZE: 2
+ALPHA: [0.01]
+BETA: [0.1]
+LOSS_TYPE: ["l1"]
+ADV_LOSS_TYPE: ["ls"]
+D_UPDATE_RATIO: [0.1]
+G_LR: [2e-4]
+D_LR: [2e-4]
+LOG_INTERVAL: 1
