@@ -17,7 +17,7 @@ import torch
 from torch import nn
 
 
-__all__ = ['GANDosePredictionTestingPatients', 'GANDosePredictionTestingPatientsWidget', 'GANDosePredictionTestingPatientsLogic', 'GANDosePredictionTestingPatientsTest']
+__all__ = ['MultiLesionLungSABRDosePrediction', 'MultiLesionLungSABRDosePredictionWidget', 'MultiLesionLungSABRDosePredictionLogic', 'MultiLesionLungSABRDosePredictionTest']
 parent_dir = 'C:/Users/wanged/OneDrive - LHSC & St. Joseph\'s/Documents/LungTumourRadiotherapy/'
 PATIENT_LIST_PATH = 'PATH_TO_CSV' #This is the CSV file that you would have used to generate the MRBs to train the model
 SLICER_MRBS_PATH = 'PATH_TO_MRBS' #This is the folder where the MRBs are stored
@@ -26,13 +26,13 @@ GENERATOR_WEIGHT_PATH = 'GENERATOR_WEIGHT_PATH' #This is the path to the generat
 GREEN = qt.QColor(12, 54, 25)
 RED = qt.QColor(110, 7, 15)
 
-class GANDosePredictionTestingPatients:
+class MultiLesionLungSABRDosePrediction:
   def __init__(self, parent):
     super().__init__()
     self.parent = parent
     self.moduleName = self.__class__.__name__
 
-    parent.title = "GANDosePredictionTestingPatients"
+    parent.title = "MultiLesionLungSABRDosePrediction"
     parent.categories = ["Custom"]
     parent.dependencies = []
     parent.contributors = ["Andras Lasso (PerkLab, Queen's University), Steve Pieper (Isomics)"]
@@ -92,7 +92,7 @@ This work is partially supported by PAR-07-249: R01CA131718 NA-MIC Virtual Colon
     testCase.messageDelay = msec
     testCase.runTest(**kwargs)
 
-class GANDosePredictionTestingPatientsWidget:
+class MultiLesionLungSABRDosePredictionWidget:
   def __init__(self, parent = None):
     """If parent widget is not specified: a top-level widget is created automatically;
     the application has to delete this widget (by calling widget.parent.deleteLater() to avoid memory leaks.
@@ -736,6 +736,7 @@ class GANDosePredictionTestingPatientsWidget:
       else:
           self.g.load_state_dict(torch.load(GENERATOR_WEIGHT_PATH, map_location="cpu"))
       self.g.eval()
+      self.device = device
       
       self.isInitialPreprocessingDone = True
 
@@ -806,15 +807,16 @@ class GANDosePredictionTestingPatientsWidget:
     volumeNode = slicer.util.getNodesByClass("vtkMRMLVolumeNode")[0]
 
 
-    est_dose = torch.tensor(slicer.util.arrayFromVolume(self.estDoseNode)).unsqueeze(0).unsqueeze(0).float().cpu()
-    oars = torch.tensor(slicer.util.arrayFromVolume(self.oarNode)).unsqueeze(0).unsqueeze(0).float().cpu()
-    ct = torch.tensor(slicer.util.arrayFromVolume(self.resizedCtNode)).unsqueeze(0).unsqueeze(0).float().cpu()
+    est_dose = torch.tensor(slicer.util.arrayFromVolume(self.estDoseNode)).unsqueeze(0).unsqueeze(0).float().to(self.device)
+    oars = torch.tensor(slicer.util.arrayFromVolume(self.oarNode)).unsqueeze(0).unsqueeze(0).float().to(self.device)
+    ct = torch.tensor(slicer.util.arrayFromVolume(self.resizedCtNode)).unsqueeze(0).unsqueeze(0).float().to(self.device)
+
     #print(est_dose.shape)
     #print(oars.shape)
 
     print("input to gan shape", est_dose.shape, oars.shape)
 
-    fake_dose = self.g(torch.cat((est_dose, ct), dim=1), oars).detach().numpy()[0,0,:,:,:]
+    fake_dose = self.g(torch.cat((est_dose, ct), dim=1), oars).cpu().detach().numpy()[0,0,:,:,:]
     fake_dose = np.clip(fake_dose, 0, None)
 
     resizedReferenceNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode", "ResizedReference")
@@ -1016,7 +1018,7 @@ class GANDosePredictionTestingPatientsWidget:
     filePath = slicer.util.modulePath(self.moduleName)
     qt.QDesktopServices.openUrl(qt.QUrl("file:///"+filePath, qt.QUrl.TolerantMode))
 
-class GANDosePredictionTestingPatientsLogic:
+class MultiLesionLungSABRDosePredictionLogic:
   def __init__(self, parent = None):
     super().__init__()
     # Get module name by stripping 'Logic' from the class name
@@ -1086,7 +1088,7 @@ class GANDosePredictionTestingPatientsLogic:
     node.SetName(slicer.mrmlScene.GenerateUniqueName(self.moduleName))
     return node
 
-class GANDosePredictionTestingPatientsTest(unittest.TestCase):
+class MultiLesionLungSABRDosePredictionTest(unittest.TestCase):
   """
   Base class for module tester class.
   Setting messageDelay to something small, like 50ms allows
